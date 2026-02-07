@@ -1,0 +1,8 @@
+{
+  "name": "car-directory",
+  "private": true,
+  "scripts": {
+    "build:json": "node car/scripts/csv_to_json.js",
+    "build:json:ruby": "ruby car/scripts/csv_to_json.rb"
+  }
+}

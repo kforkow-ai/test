@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vehicle Maintenance Workshops – Directory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --accent: #0ea5e9;
+      --accent-hover: #0284c7;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 1.5rem 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow);
+    }
+    .header-inner {
+      max-width: 64rem;
+      margin: 0 auto;
+    }
+    .title {
+      margin: 0 0 0.25rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .subtitle {
+      margin: 0 0 1.25rem;
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .search-wrap {
+      flex: 1;
+      min-width: 14rem;
+      position: relative;
+    }
+    .search-wrap::before {
+      content: '';
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1.125rem;
+      height: 1.125rem;
+      border: 2px solid var(--text-muted);
+      border-radius: 50%;
+      border-right-color: transparent;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+      font: inherit;
+      font-size: 0.9375rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+    }
+    .search-wrap input::placeholder { color: var(--text-muted); }
+    select {
+      padding: 0.625rem 2rem 0.625rem 0.875rem;
+      font: inherit;
+      font-size: 0.9375rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      min-width: 10rem;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+    .stats {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      padding: 0.25rem 0;
+    }
+    .stats strong { color: var(--text); }
+    main {
+      max-width: 64rem;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .loading {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--text-muted);
+    }
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-left: 0.5rem;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: -0.35rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #dc2626;
+      background: #fef2f2;
+      border-radius: var(--radius);
+      border: 1px solid #fecaca;
+    }
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px dashed var(--border);
+    }
+    .empty p { margin: 0 0 0.5rem; }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      border-color: #bae6fd;
+      box-shadow: var(--shadow-hover);
+    }
+    .card-title {
+      margin: 0 0 0.5rem;
+      font-size: 1.0625rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .card-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+    .card-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.9375rem;
+      color: var(--text);
+    }
+    .card-row .icon {
+      flex-shrink: 0;
+      width: 1.125rem;
+      height: 1.125rem;
+      margin-top: 0.15rem;
+      color: var(--text-muted);
+    }
+    .card-row a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .card-row a:hover { text-decoration: underline; }
+    .card-muted {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      line-height: 1.5;
+    }
+    footer {
+      max-width: 64rem;
+      margin: 2rem auto 0;
+      padding: 1rem 1.5rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="title">Vehicle Maintenance Workshops</h1>
+      <p class="subtitle">Registered workshops directory · Data from CSV (loaded as JSON)</p>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <input type="search" id="search" placeholder="Search by name, address or district…" autocomplete="off">
+        </div>
+        <select id="area" aria-label="Filter by area">
+          <option value="">All areas</option>
+        </select>
+        <select id="district" aria-label="Filter by district">
+          <option value="">All districts</option>
+        </select>
+        <span class="stats" id="stats">—</span>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="loading" id="loading">Loading directory</div>
+    <div class="error" id="error" hidden></div>
+    <div class="empty" id="empty" hidden>
+      <p>No workshops match your filters.</p>
+      <p>Try changing the search or filters above.</p>
+    </div>
+    <div class="list" id="list" hidden></div>
+  </main>
+  <footer>
+    Data source: registered_vehicle_maintenance_workshops.csv → car/workshops.json
+  </footer>
+  <script>
+    const DATA_URL = 'car/workshops.json';
+    let workshops = [];
+
+    const searchEl = document.getElementById('search');
+    const areaEl = document.getElementById('area');
+    const districtEl = document.getElementById('district');
+    const statsEl = document.getElementById('stats');
+    const loadingEl = document.getElementById('loading');
+    const errorEl = document.getElementById('error');
+    const emptyEl = document.getElementById('empty');
+    const listEl = document.getElementById('list');
+
+    function by(obj, key) { return (obj && obj[key]) || ''; }
+
+    const iconAddress = '<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+    const iconPhone = '<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+    const iconClock = '<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+
+    function fillFilters(data) {
+      const areas = [...new Set(data.map(w => by(w, 'Area (English)')).filter(Boolean))].sort();
+      const districts = [...new Set(data.map(w => by(w, 'District (English)')).filter(Boolean))].sort();
+      areas.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        areaEl.appendChild(opt);
+      });
+      districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        districtEl.appendChild(opt);
+      });
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function render(rows) {
+      const total = workshops.length;
+      statsEl.innerHTML = rows.length === total
+        ? '<strong>' + total.toLocaleString() + '</strong> workshops'
+        : '<strong>' + rows.length.toLocaleString() + '</strong> of ' + total.toLocaleString() + ' workshops';
+
+      if (rows.length === 0) {
+        listEl.hidden = true;
+        emptyEl.hidden = false;
+        return;
+      }
+      emptyEl.hidden = true;
+      listEl.hidden = false;
+
+      listEl.innerHTML = rows.map(w => {
+        const name = by(w, 'Name of Company (English)') || by(w, 'Name of Company (Traditional Chinese)') || '—';
+        const reg = by(w, 'Registration Number');
+        const area = by(w, 'Area (English)');
+        const district = by(w, 'District (English)');
+        const address = by(w, 'Business Address (English)') || by(w, 'Business Address (Traditional Chinese)');
+        const tel = by(w, 'Telephone Number');
+        const hours = by(w, 'Opening Hours');
+        const services = by(w, 'Types of Services Provided by the Workshop (English)');
+        const vehicles = by(w, 'Types of Vehicles Serviced (English)');
+
+        let badges = [reg].filter(Boolean);
+        if (area) badges.push(area);
+        if (district) badges.push(district);
+
+        return '<article class="card">' +
+          '<h2 class="card-title">' + escapeHtml(name) + '</h2>' +
+          (badges.length ? '<div class="card-badges">' + badges.map(b => '<span class="badge">' + escapeHtml(b) + '</span>').join('') + '</div>' : '') +
+          (address ? '<div class="card-row">' + iconAddress + '<span>' + escapeHtml(address) + '</span></div>' : '') +
+          (tel ? '<div class="card-row">' + iconPhone + '<a href="tel:' + escapeHtml(tel) + '">' + escapeHtml(tel) + '</a></div>' : '') +
+          (hours ? '<div class="card-row">' + iconClock + '<span>' + escapeHtml(hours) + '</span></div>' : '') +
+          (services || vehicles ? '<div class="card-muted">' + [services, vehicles].filter(Boolean).map(escapeHtml).join(' · ') + '</div>' : '') +
+          '</article>';
+      }).join('');
+    }
+
+    function filter() {
+      const q = (searchEl.value || '').trim().toLowerCase();
+      const area = areaEl.value;
+      const district = districtEl.value;
+      const rows = workshops.filter(w => {
+        if (area && by(w, 'Area (English)') !== area) return false;
+        if (district && by(w, 'District (English)') !== district) return false;
+        if (!q) return true;
+        const nameEn = (by(w, 'Name of Company (English)') || '').toLowerCase();
+        const nameZh = (by(w, 'Name of Company (Traditional Chinese)') || '').toLowerCase();
+        const addrEn = (by(w, 'Business Address (English)') || '').toLowerCase();
+        const addrZh = (by(w, 'Business Address (Traditional Chinese)') || '').toLowerCase();
+        const districtEn = (by(w, 'District (English)') || '').toLowerCase();
+        return nameEn.includes(q) || nameZh.includes(q) || addrEn.includes(q) || addrZh.includes(q) || districtEn.includes(q);
+      });
+      render(rows);
+    }
+
+    searchEl.addEventListener('input', filter);
+    searchEl.addEventListener('search', filter);
+    areaEl.addEventListener('change', filter);
+    districtEl.addEventListener('change', filter);
+
+    fetch(DATA_URL)
+      .then(r => {
+        if (!r.ok) throw new Error('Could not load data. Serve this folder over HTTP (e.g. npx serve .) so car/workshops.json loads.');
+        return r.json();
+      })
+      .then(data => {
+        workshops = Array.isArray(data) ? data : [];
+        loadingEl.hidden = true;
+        if (workshops.length === 0) {
+          errorEl.textContent = 'No workshops in data. Run: ruby car/scripts/csv_to_json.rb';
+          errorEl.hidden = false;
+          return;
+        }
+        fillFilters(workshops);
+        listEl.hidden = false;
+        filter();
+      })
+      .catch(err => {
+        loadingEl.hidden = true;
+        errorEl.textContent = err.message || 'Failed to load directory.';
+        errorEl.hidden = false;
+      });
+  </script>
+</body>
+</html>

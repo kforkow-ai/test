@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vehicle Maintenance Workshops – Directory</title>
+  <title>車輛維修工場名錄 Vehicle Maintenance Workshops – Directory</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f8fafc;
@@ -23,7 +23,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -216,6 +216,12 @@
       margin-top: 0.5rem;
       line-height: 1.5;
     }
+    .zh, .card-title-zh, .card-address-zh, .card-muted-zh {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .card-title-en { margin-bottom: 0.25rem; }
+    .card-title-zh { font-size: 1rem; color: var(--text-muted); margin-top: 0; }
+    .card-address-zh, .card-muted-zh { font-size: 0.875rem; margin-top: 0.15rem; }
     footer {
       max-width: 64rem;
       margin: 2rem auto 0;
@@ -230,33 +236,33 @@
 <body>
   <header class="header">
     <div class="header-inner">
-      <h1 class="title">Vehicle Maintenance Workshops</h1>
-      <p class="subtitle">Registered workshops directory · Data from CSV (loaded as JSON)</p>
+      <h1 class="title">Vehicle Maintenance Workshops <span class="zh">車輛維修工場名錄</span></h1>
+      <p class="subtitle">Registered workshops directory · 已登記工場名錄 · Data from CSV (loaded as JSON)</p>
       <div class="toolbar">
         <div class="search-wrap">
-          <input type="search" id="search" placeholder="Search by name, address or district…" autocomplete="off">
+          <input type="search" id="search" placeholder="Search 搜尋：name, address, district 名稱／地址／地區…" autocomplete="off">
         </div>
         <select id="area" aria-label="Filter by area">
-          <option value="">All areas</option>
+          <option value="">All areas 全部地區</option>
         </select>
         <select id="district" aria-label="Filter by district">
-          <option value="">All districts</option>
+          <option value="">All districts 全部分區</option>
         </select>
         <span class="stats" id="stats">—</span>
       </div>
     </div>
   </header>
   <main>
-    <div class="loading" id="loading">Loading directory</div>
+    <div class="loading" id="loading">Loading directory 載入名錄…</div>
     <div class="error" id="error" hidden></div>
     <div class="empty" id="empty" hidden>
-      <p>No workshops match your filters.</p>
-      <p>Try changing the search or filters above.</p>
+      <p>No workshops match your filters. 沒有符合條件的工場。</p>
+      <p>Try changing the search or filters above. 請更改搜尋或篩選條件。</p>
     </div>
     <div class="list" id="list" hidden></div>
   </main>
   <footer>
-    Data source: registered_vehicle_maintenance_workshops.csv → car/workshops.json
+    Data source 數據來源: registered_vehicle_maintenance_workshops.csv → car/workshops.json
   </footer>
   <script>
     const DATA_URL = 'car/workshops.json';
@@ -278,18 +284,26 @@
     const iconClock = '<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
 
     function fillFilters(data) {
-      const areas = [...new Set(data.map(w => by(w, 'Area (English)')).filter(Boolean))].sort();
-      const districts = [...new Set(data.map(w => by(w, 'District (English)')).filter(Boolean))].sort();
-      areas.forEach(a => {
+      const areaMap = {};
+      const districtMap = {};
+      data.forEach(w => {
+        const ae = by(w, 'Area (English)');
+        const az = by(w, 'Area (Traditional Chinese)');
+        if (ae) areaMap[ae] = az || ae;
+        const de = by(w, 'District (English)');
+        const dz = by(w, 'District (Traditional Chinese)');
+        if (de) districtMap[de] = dz || de;
+      });
+      Object.keys(areaMap).sort().forEach(ae => {
         const opt = document.createElement('option');
-        opt.value = a;
-        opt.textContent = a;
+        opt.value = ae;
+        opt.textContent = areaMap[ae] === ae ? ae : ae + ' ' + areaMap[ae];
         areaEl.appendChild(opt);
       });
-      districts.forEach(d => {
+      Object.keys(districtMap).sort().forEach(de => {
         const opt = document.createElement('option');
-        opt.value = d;
-        opt.textContent = d;
+        opt.value = de;
+        opt.textContent = districtMap[de] === de ? de : de + ' ' + districtMap[de];
         districtEl.appendChild(opt);
       });
     }
@@ -303,8 +317,8 @@
     function render(rows) {
       const total = workshops.length;
       statsEl.innerHTML = rows.length === total
-        ? '<strong>' + total.toLocaleString() + '</strong> workshops'
-        : '<strong>' + rows.length.toLocaleString() + '</strong> of ' + total.toLocaleString() + ' workshops';
+        ? '<strong>' + total.toLocaleString() + '</strong> workshops 工場'
+        : '<strong>' + rows.length.toLocaleString() + '</strong> / ' + total.toLocaleString() + ' workshops 工場';
 
       if (rows.length === 0) {
         listEl.hidden = true;
@@ -315,27 +329,48 @@
       listEl.hidden = false;
 
       listEl.innerHTML = rows.map(w => {
-        const name = by(w, 'Name of Company (English)') || by(w, 'Name of Company (Traditional Chinese)') || '—';
+        const nameEn = by(w, 'Name of Company (English)');
+        const nameZh = by(w, 'Name of Company (Traditional Chinese)');
         const reg = by(w, 'Registration Number');
-        const area = by(w, 'Area (English)');
-        const district = by(w, 'District (English)');
-        const address = by(w, 'Business Address (English)') || by(w, 'Business Address (Traditional Chinese)');
+        const areaEn = by(w, 'Area (English)');
+        const areaZh = by(w, 'Area (Traditional Chinese)');
+        const districtEn = by(w, 'District (English)');
+        const districtZh = by(w, 'District (Traditional Chinese)');
+        const addressEn = by(w, 'Business Address (English)');
+        const addressZh = by(w, 'Business Address (Traditional Chinese)');
         const tel = by(w, 'Telephone Number');
         const hours = by(w, 'Opening Hours');
-        const services = by(w, 'Types of Services Provided by the Workshop (English)');
-        const vehicles = by(w, 'Types of Vehicles Serviced (English)');
+        const servicesEn = by(w, 'Types of Services Provided by the Workshop (English)');
+        const servicesZh = by(w, 'Types of Services Provided by the Workshop (Traditional Chinese)');
+        const vehiclesEn = by(w, 'Types of Vehicles Serviced (English)');
+        const vehiclesZh = by(w, 'Types of Vehicles Serviced (Traditional Chinese)');
 
+        const titleEn = nameEn || nameZh || '—';
+        const titleZh = (nameZh && nameZh !== nameEn) ? nameZh : '';
         let badges = [reg].filter(Boolean);
-        if (area) badges.push(area);
-        if (district) badges.push(district);
+        if (areaEn || areaZh) badges.push(areaZh ? areaEn ? areaEn + ' ' + areaZh : areaZh : areaEn);
+        if (districtEn || districtZh) badges.push(districtZh ? districtEn ? districtEn + ' ' + districtZh : districtZh : districtEn);
+
+        const addrBlock = (addressEn || addressZh) ? '<div class="card-row">' + iconAddress + '<span>' +
+          (addressEn ? '<span>' + escapeHtml(addressEn) + '</span>' : '') +
+          (addressEn && addressZh ? '<br>' : '') +
+          (addressZh ? '<span class="card-address-zh zh">' + escapeHtml(addressZh) + '</span>' : '') +
+          '</span></div>' : '';
+
+        const servicesParts = [];
+        if (servicesEn || servicesZh) servicesParts.push((servicesEn ? escapeHtml(servicesEn) : '') + (servicesEn && servicesZh ? ' ' : '') + (servicesZh ? '<span class="card-muted-zh zh">' + escapeHtml(servicesZh) + '</span>' : ''));
+        if (vehiclesEn || vehiclesZh) servicesParts.push((vehiclesEn ? escapeHtml(vehiclesEn) : '') + (vehiclesEn && vehiclesZh ? ' ' : '') + (vehiclesZh ? '<span class="card-muted-zh zh">' + escapeHtml(vehiclesZh) + '</span>' : ''));
+        const servicesBlock = servicesParts.length ? '<div class="card-muted">' + servicesParts.join(' · ') + '</div>' : '';
 
         return '<article class="card">' +
-          '<h2 class="card-title">' + escapeHtml(name) + '</h2>' +
+          '<h2 class="card-title">' +
+          (titleZh ? '<span class="card-title-en">' + escapeHtml(titleEn) + '</span><br><span class="card-title-zh zh">' + escapeHtml(titleZh) + '</span>' : escapeHtml(titleEn)) +
+          '</h2>' +
           (badges.length ? '<div class="card-badges">' + badges.map(b => '<span class="badge">' + escapeHtml(b) + '</span>').join('') + '</div>' : '') +
-          (address ? '<div class="card-row">' + iconAddress + '<span>' + escapeHtml(address) + '</span></div>' : '') +
+          addrBlock +
           (tel ? '<div class="card-row">' + iconPhone + '<a href="tel:' + escapeHtml(tel) + '">' + escapeHtml(tel) + '</a></div>' : '') +
           (hours ? '<div class="card-row">' + iconClock + '<span>' + escapeHtml(hours) + '</span></div>' : '') +
-          (services || vehicles ? '<div class="card-muted">' + [services, vehicles].filter(Boolean).map(escapeHtml).join(' · ') + '</div>' : '') +
+          servicesBlock +
           '</article>';
       }).join('');
     }
